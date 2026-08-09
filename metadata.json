@@ -1,0 +1,8 @@
+{
+  "name": "Remix Pizzas Pipo",
+  "description": "Sitio web oficial y plataforma interactiva para Pizzas Pipo con creador visual de pizzas, menú interactivo, pedidos en línea y Pipo AI Sommelier.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

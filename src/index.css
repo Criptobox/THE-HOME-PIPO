@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #181614;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #38332E;
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #E03812;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Light Mode Overrides preserving Pizzas Pipo visual identity */
+html.light, html.light body {
+  background-color: #FAF8F5 !important;
+  color: #1C1917 !important;
+}
+
+html.light header {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #E7E5E4 !important;
+  color: #1C1917 !important;
+}
+
+html.light header nav {
+  background-color: #F4F0EA !important;
+  border-color: #E2DACD !important;
+}
+
+html.light header nav button {
+  color: #44403C !important;
+}
+
+html.light section#hero {
+  background-color: #0F0E0D !important;
+  color: #FFFFFF !important;
+}
+
+html.light .bg-\[\#0F0E0D\],
+html.light .bg-\[\#0E0D0C\] {
+  background-color: #FAF8F5 !important;
+  color: #1C1917 !important;
+}
+
+html.light .bg-\[\#121110\],
+html.light .bg-\[\#141210\],
+html.light .bg-\[\#161412\],
+html.light .bg-\[\#181614\],
+html.light .bg-\[\#1A1816\],
+html.light .bg-\[\#1C1A18\] {
+  background-color: #FFFFFF !important;
+  border-color: #E7E5E4 !important;
+  color: #1C1917 !important;
+}
+
+html.light .bg-stone-900,
+html.light .bg-stone-900\/80,
+html.light .bg-stone-900\/60,
+html.light .bg-stone-900\/90,
+html.light .bg-stone-950 {
+  background-color: #F5F2ED !important;
+  border-color: #E2DACD !important;
+  color: #1C1917 !important;
+}
+
+html.light .text-stone-100,
+html.light .text-stone-200,
+html.light .text-stone-300 {
+  color: #292524 !important;
+}
+
+html.light .text-stone-400,
+html.light .text-stone-500 {
+  color: #57534E !important;
+}
+
+html.light .border-stone-800,
+html.light .border-stone-800\/80,
+html.light .border-stone-800\/60,
+html.light .border-stone-800\/90 {
+  border-color: #E7E5E4 !important;
+}
+
+html.light button.bg-gradient-to-r,
+html.light button.bg-gradient-to-r *,
+html.light button.bg-emerald-600,
+html.light button.bg-emerald-600 *,
+html.light a.bg-emerald-600,
+html.light a.bg-emerald-600 * {
+  color: #FFFFFF !important;
+}
+
+
