@@ -275,6 +275,12 @@ export default function App() {
     let eventSource: EventSource | null = null;
     try {
       eventSource = new EventSource('/api/store-data/stream');
+      eventSource.onerror = () => {
+        // En entornos estáticos como GitHub Pages, cerramos el SSE limpiamente
+        if (eventSource) {
+          eventSource.close();
+        }
+      };
       eventSource.onmessage = (event) => {
         try {
           if (!event.data) return;
