@@ -1,0 +1,8 @@
+{
+  "name": "THE HOME PIPO",
+  "description": "Sitio web oficial y plataforma interactiva para THE HOME PIPO con pizzas artesanales horneadas en horno de gas sobre piedras volcánicas, creador visual de pizzas, menú completo y pedidos para recoger y comer en local.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
