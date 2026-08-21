@@ -11,9 +11,11 @@ import { DeliveryChecker } from './components/DeliveryChecker';
 import { ReviewsAndContact } from './components/ReviewsAndContact';
 import { AdminModal } from './components/AdminModal';
 import { Footer } from './components/Footer';
+import { OfflineStatusIndicator } from './components/OfflineStatusIndicator';
 
 import { MenuItem, CartItem, Order, OrderStatus, PromoCode, Review, Topping } from './types';
 import { MENU_ITEMS, PROMO_CODES, DELIVERY_ZONES, REVIEWS, TOPPINGS } from './data/menu';
+import { notifyOrderStatus, notifyPromo, requestNotificationPermission } from './utils/notifications';
 
 export default function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -83,7 +85,7 @@ export default function App() {
       address: 'Av. de los Hornos #450, Col. Centro Histórico, Ciudad de México',
       phone: '55 6747 0079',
       schedule: 'Lunes a Domingo: 12:00 PM – 11:00 PM',
-      tickerMessage: '¡MARTES Y JUEVES DE ORILLA DE QUESO GRATIS! Usa el código VOLCANICA para $25 OFF',
+      tickerMessage: '🔥 ¡PIZZAS ARTESANALES SOBRE PIEDRA VOLCÁNICA! Masa fresca recién horneada a 450°C • Servicio en Sucursal y Entrega a Domicilio',
       ovenStatus: 'Horno de Gas sobre Piedra Volcánica encendido a 450°C',
     };
   });
@@ -223,7 +225,7 @@ export default function App() {
       address: 'Av. de los Hornos #450, Col. Centro Histórico, Ciudad de México',
       phone: '55 6747 0079',
       schedule: 'Lunes a Domingo: 12:00 PM – 11:00 PM',
-      tickerMessage: '¡MARTES Y JUEVES DE ORILLA DE QUESO GRATIS! Usa el código VOLCANICA para $25 OFF',
+      tickerMessage: '🔥 ¡PIZZAS ARTESANALES SOBRE PIEDRA VOLCÁNICA! Masa fresca recién horneada a 450°C • Servicio en Sucursal y Entrega a Domicilio',
       ovenStatus: 'Horno de Gas sobre Piedra Volcánica encendido a 450°C',
     };
     setStoreInfo(defaultInfo);
@@ -296,7 +298,7 @@ export default function App() {
               address: 'Av. de los Hornos #450, Col. Centro Histórico, Ciudad de México',
               phone: '55 6747 0079',
               schedule: 'Lunes a Domingo: 12:00 PM – 11:00 PM',
-              tickerMessage: '¡MARTES Y JUEVES DE ORILLA DE QUESO GRATIS! Usa el código VOLCANICA para $25 OFF',
+              tickerMessage: '🔥 ¡PIZZAS ARTESANALES SOBRE PIEDRA VOLCÁNICA! Masa fresca recién horneada a 450°C • Servicio en Sucursal y Entrega a Domicilio',
               ovenStatus: 'Horno de Gas sobre Piedra Volcánica encendido a 450°C',
             });
             localStorage.clear();
@@ -381,6 +383,27 @@ export default function App() {
     setCartItems([]);
     setIsCartOpen(false);
     setIsTrackerOpen(true);
+
+    // Request push notification permission if not yet decided and send initial confirmation alert
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        notifyOrderStatus(orderData.id, 'recibido', {
+          orderType: orderData.orderType,
+          tableNumber: orderData.tableNumber,
+          total: orderData.total,
+        });
+      } else if (Notification.permission === 'default') {
+        requestNotificationPermission().then((perm) => {
+          if (perm === 'granted') {
+            notifyOrderStatus(orderData.id, 'recibido', {
+              orderType: orderData.orderType,
+              tableNumber: orderData.tableNumber,
+              total: orderData.total,
+            });
+          }
+        });
+      }
+    }
   };
 
   // Simulation step for order status
@@ -389,7 +412,17 @@ export default function App() {
     const orderStatuses: OrderStatus[] = ['recibido', 'preparando', 'horneando', 'listo', 'entregado'];
     const currentIdx = orderStatuses.indexOf(activeOrder.status);
     const nextIdx = Math.min(orderStatuses.length - 1, currentIdx + 1);
-    setActiveOrder({ ...activeOrder, status: orderStatuses[nextIdx] });
+    const nextStatus = orderStatuses[nextIdx];
+    
+    const updatedOrder = { ...activeOrder, status: nextStatus };
+    setActiveOrder(updatedOrder);
+
+    // Send push notification for status update
+    notifyOrderStatus(updatedOrder.id, nextStatus, {
+      orderType: updatedOrder.orderType,
+      tableNumber: updatedOrder.tableNumber,
+      total: updatedOrder.total,
+    });
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -499,6 +532,9 @@ export default function App() {
         onSaveStoreInfo={handleSaveStoreInfo}
         onResetAllData={handleResetAllData}
       />
+
+      {/* Network & Offline Status Toast / Banner */}
+      <OfflineStatusIndicator />
 
     </div>
   );

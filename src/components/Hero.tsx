@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Flame, Sparkles, Clock, Star, ShieldCheck, ArrowRight, Pizza, Loader2 } from 'lucide-react';
 import heroPizzaImg from '../assets/images/pipo_hero_pizza_1786284977229.jpg';
+import { PwaInstallButton } from './PwaInstallButton';
 
 interface HeroProps {
   onOrderNow: () => void;
@@ -83,6 +84,9 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNow, onOpenBuilder, ovenStatu
               >
                 <span>Arma tu Pizza</span>
               </button>
+
+              {/* Install PWA Hero Button (visible only when installable) */}
+              <PwaInstallButton variant="banner" className="w-full sm:w-auto !py-4 !text-base" />
             </div>
 
             {/* Quick Metrics / Guarantees */}

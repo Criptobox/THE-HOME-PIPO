@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
-import { X, CheckCircle, Flame, Store, PackageCheck, Clock, Phone, Sparkles, UtensilsCrossed, Volume2, MessageCircle } from 'lucide-react';
+import { X, CheckCircle, Flame, Store, PackageCheck, Clock, Phone, Sparkles, UtensilsCrossed, Volume2, MessageCircle, Bell, BellRing, BellOff, Settings } from 'lucide-react';
 import { Order, OrderStatus } from '../types';
 import { soundService } from '../utils/audio';
 import { buildWhatsAppOrderUrl, PIPO_FORMATTED_PHONE } from '../utils/whatsapp';
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+  notifyOrderStatus,
+  NotificationPermissionState,
+} from '../utils/notifications';
+import { NotificationSettingsModal } from './NotificationSettingsModal';
 
 interface OrderTrackerModalProps {
   order: Order | null;
@@ -20,6 +27,9 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
   if (!order) return null;
 
   const [minutesLeft, setMinutesLeft] = useState(order.estimatedMinutes || 15);
+  const [notificationPerm, setNotificationPerm] = useState<NotificationPermissionState>(() => getNotificationPermission());
+  const [isRequestingPerm, setIsRequestingPerm] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     // Fire confetti on creation
@@ -36,6 +46,23 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
 
     return () => clearInterval(timer);
   }, [order.id]);
+
+  const handleEnableNotifications = async () => {
+    setIsRequestingPerm(true);
+    try {
+      const perm = await requestNotificationPermission();
+      setNotificationPerm(perm);
+      if (perm === 'granted') {
+        notifyOrderStatus(order.id, order.status, {
+          orderType: order.orderType,
+          tableNumber: order.tableNumber,
+          total: order.total,
+        });
+      }
+    } finally {
+      setIsRequestingPerm(false);
+    }
+  };
 
   const isDineIn = order.orderType === 'dine_in';
 
@@ -184,6 +211,75 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
           </div>
         </div>
 
+        {/* Push Notification Card for Order Updates */}
+        <div className="p-4 rounded-2xl bg-stone-100 dark:bg-stone-900/90 border border-orange-200 dark:border-stone-800 space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className={`p-2 rounded-xl border flex-shrink-0 ${
+                notificationPerm === 'granted'
+                  ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                  : 'bg-orange-500/20 text-orange-600 dark:text-orange-400 border-orange-500/30'
+              }`}>
+                {notificationPerm === 'granted' ? (
+                  <BellRing className="w-4 h-4 animate-bounce" />
+                ) : (
+                  <Bell className="w-4 h-4" />
+                )}
+              </div>
+              <div>
+                <span className="text-xs font-black text-stone-900 dark:text-white flex items-center gap-1.5">
+                  <span>Notificaciones Push del Pedido</span>
+                  {notificationPerm === 'granted' && (
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-extrabold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      Activadas
+                    </span>
+                  )}
+                </span>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  {notificationPerm === 'granted'
+                    ? 'Te avisaremos cuando tu pizza entre al horno y cuando esté lista para entrega.'
+                    : 'Recibe una alerta en tu dispositivo aunque cierres o cambies de pestaña.'}
+                </p>
+              </div>
+            </div>
+
+            {notificationPerm !== 'granted' ? (
+              <button
+                onClick={handleEnableNotifications}
+                disabled={isRequestingPerm || notificationPerm === 'unsupported'}
+                className="px-3 py-1.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                <Bell className="w-3.5 h-3.5" />
+                <span>{isRequestingPerm ? 'Activando...' : 'Activar Avisos'}</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="px-2.5 py-1 bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold text-[11px] rounded-lg transition-colors cursor-pointer flex items-center gap-1 whitespace-nowrap"
+                  title="Personalizar qué alertas recibir o cancelar suscripción"
+                >
+                  <Settings className="w-3 h-3" />
+                  <span>Ajustes</span>
+                </button>
+                <button
+                  onClick={() => {
+                    notifyOrderStatus(order.id, order.status, {
+                      orderType: order.orderType,
+                      tableNumber: order.tableNumber,
+                      total: order.total,
+                    });
+                  }}
+                  className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 font-bold text-[11px] rounded-lg transition-colors cursor-pointer whitespace-nowrap border border-amber-500/30"
+                  title="Probar notificación en tu dispositivo"
+                >
+                  Probar Alerta
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* WhatsApp & Sucursal Contact Box */}
         <div className="space-y-2.5">
           {/* WhatsApp Direct Action Button */}
@@ -240,6 +336,15 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
         </div>
 
       </motion.div>
+
+      {/* Preferences modal */}
+      <NotificationSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => {
+          setIsSettingsOpen(false);
+          setNotificationPerm(getNotificationPermission());
+        }}
+      />
     </motion.div>
   );
 };

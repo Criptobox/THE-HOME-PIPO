@@ -36,6 +36,9 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
   ];
 
   const filteredItems = currentMenuItems.filter((item) => {
+    // Only show available items (admin check control)
+    if (item.available === false) return false;
+
     // Category match
     if (activeCategory !== 'todos') {
       if (item.category !== activeCategory) return false;

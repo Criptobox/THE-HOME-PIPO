@@ -59,6 +59,7 @@ export interface MenuItem {
   description: string;
   basePrice: number; // Precio en MXN (Medida única artesanal)
   image: string;
+  available?: boolean;
   popular?: boolean;
   spicy?: boolean;
   vegetarian?: boolean;

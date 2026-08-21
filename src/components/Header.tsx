@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { ShoppingBag, Flame, Phone, MapPin, Sparkles, Clock, Menu as MenuIcon, X, Sun, Moon, Laptop, ChevronDown, Download, UtensilsCrossed } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShoppingBag, Flame, Phone, MapPin, Sparkles, Clock, Menu as MenuIcon, X, Sun, Moon, Laptop, ChevronDown, UtensilsCrossed, MessageCircle, Bell, BellRing, Download, Settings } from 'lucide-react';
+import { getNotificationPermission, NotificationPermissionState, getNotificationPreferences } from '../utils/notifications';
+import { PwaInstallButton } from './PwaInstallButton';
+import { NotificationSettingsModal } from './NotificationSettingsModal';
 
 interface HeaderProps {
   cartItemCount: number;
@@ -32,10 +35,23 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [isNotificationSettingsOpen, setIsNotificationSettingsOpen] = useState(false);
   const [logoClicks, setLogoClicks] = useState(0);
   const [lastClickTime, setLastClickTime] = useState(0);
   const [isCartBumping, setIsCartBumping] = useState(false);
+  const [notificationPerm, setNotificationPerm] = useState<NotificationPermissionState>(() => getNotificationPermission());
+  const [notificationPrefs, setNotificationPrefs] = useState(() => getNotificationPreferences());
   const prevCartCountRef = React.useRef(cartItemCount);
+
+  // Sync notification preferences and permission updates
+  useEffect(() => {
+    const handlePrefsChange = () => {
+      setNotificationPerm(getNotificationPermission());
+      setNotificationPrefs(getNotificationPreferences());
+    };
+    window.addEventListener('pipo-notification-prefs-changed', handlePrefsChange);
+    return () => window.removeEventListener('pipo-notification-prefs-changed', handlePrefsChange);
+  }, []);
 
   // Trigger subtle shake and pop animation when a new item is added to cart
   React.useEffect(() => {
@@ -84,12 +100,14 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#121110]/95 backdrop-blur-md border-b border-stone-200 dark:border-orange-950/40 text-stone-900 dark:text-white shadow-sm dark:shadow-2xl transition-colors">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#121110]/95 backdrop-blur-md border-b border-stone-200/80 dark:border-stone-800/80 text-stone-900 dark:text-white shadow-sm dark:shadow-2xl transition-colors">
       {/* Top Banner Ticker */}
-      <div className="bg-gradient-to-r from-red-700 via-orange-600 to-red-700 text-white text-xs font-semibold py-1.5 px-4 text-center tracking-wide flex items-center justify-center gap-2 shadow-inner">
-        <Flame className="w-3.5 h-3.5 animate-pulse text-yellow-300" />
-        <span>{tickerMessage || '¡PIZZAS ARTESANALES SOBRE PIEDRA VOLCÁNICA! Cocinadas en horno de gas a 450°C. Pide para recoger en sucursal o comer en nuestro local.'}</span>
-        <Flame className="w-3.5 h-3.5 animate-pulse text-yellow-300" />
+      <div className="bg-gradient-to-r from-red-700 via-orange-600 to-amber-600 text-white text-xs font-bold py-2 px-4 text-center tracking-wide flex items-center justify-center gap-2 shadow-inner">
+        <Flame className="w-3.5 h-3.5 animate-pulse text-yellow-300 shrink-0" />
+        <span className="truncate max-w-4xl">
+          {tickerMessage || '🔥 ¡PIZZAS ARTESANALES SOBRE PIEDRA VOLCÁNICA! Masa fresca y horneadas a 450°C • Servicio a Domicilio y en Sucursal'}
+        </span>
+        <Flame className="w-3.5 h-3.5 animate-pulse text-yellow-300 shrink-0 hidden sm:inline" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -101,7 +119,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-3 cursor-pointer group select-none relative"
             title="THE HOME PIPO - Toca 3 veces para modo Administrador"
           >
-            <div className="relative w-11 h-11 bg-gradient-to-br from-red-600 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-red-900/40 group-hover:scale-105 transition-transform duration-300 border border-orange-400/30">
+            <div className="relative w-12 h-12 bg-gradient-to-br from-red-600 via-orange-500 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-red-900/30 group-hover:scale-105 transition-transform duration-300 border border-orange-400/40">
               <span className="text-2xl transform -rotate-12 group-hover:rotate-0 transition-transform duration-300">🍕</span>
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#121110] animate-ping" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#121110]" />
@@ -117,22 +135,22 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-amber-700 dark:text-amber-400/90 font-bold tracking-widest uppercase flex items-center gap-1">
-                <Flame className="w-2.5 h-2.5 text-orange-600 dark:text-orange-500 inline" /> Horno de Gas sobre Piedra Volcánica
+              <p className="text-[10px] sm:text-[11px] text-amber-700 dark:text-amber-400 font-extrabold tracking-wider uppercase flex items-center gap-1">
+                <Flame className="w-3 h-3 text-orange-600 dark:text-orange-500 inline shrink-0" /> HORNO DE GAS SOBRE PIEDRA VOLCÁNICA
               </p>
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1 bg-stone-100 dark:bg-[#1A1816] px-3 py-1.5 rounded-full border border-stone-200 dark:border-stone-800/80 shadow-inner">
+          <nav className="hidden lg:flex items-center gap-1 bg-stone-100/90 dark:bg-[#1A1816] px-3 py-1.5 rounded-full border border-stone-200 dark:border-stone-800/80 shadow-inner">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer ${
                   activeSection === item.id
-                    ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-md shadow-red-900/40 font-extrabold'
-                    : 'text-stone-700 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white hover:bg-stone-200/80 dark:hover:bg-stone-800/60'
+                    ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-md shadow-red-900/30'
+                    : 'text-stone-700 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white hover:bg-stone-200/70 dark:hover:bg-stone-800/60'
                 }`}
               >
                 {item.label}
@@ -147,42 +165,39 @@ export const Header: React.FC<HeaderProps> = ({
             {hasActiveOrder && (
               <button
                 onClick={onOpenTracker}
-                className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black text-xs rounded-2xl shadow-lg shadow-amber-500/20 hover:scale-105 transition-transform animate-pulse"
+                className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black text-xs rounded-2xl shadow-lg shadow-amber-500/20 hover:scale-105 transition-transform animate-pulse cursor-pointer"
               >
                 <UtensilsCrossed className="w-4 h-4" />
                 <span>Estado de Pedido</span>
               </button>
             )}
 
-            {/* Quick Phone Call */}
+            {/* Quick WhatsApp Contact */}
             <a
-              href={`tel:${(storePhone || '5557476749').replace(/[^0-9]/g, '')}`}
-              className="hidden md:flex items-center gap-2 text-stone-800 dark:text-stone-300 hover:text-amber-700 dark:hover:text-amber-400 text-xs font-bold px-3 py-1.5 rounded-full bg-stone-100 dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 transition-colors"
+              href={`https://wa.me/52${(storePhone || '5567470079').replace(/[^0-9]/g, '')}?text=${encodeURIComponent('¡Hola THE HOME PIPO! Quisiera consultar el menú y hacer un pedido.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center gap-2 text-stone-800 dark:text-stone-300 hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-bold px-3.5 py-2 rounded-2xl bg-stone-100 hover:bg-emerald-50 dark:bg-stone-900/90 dark:hover:bg-emerald-950/40 border border-stone-200 hover:border-emerald-500/40 dark:border-stone-800 dark:hover:border-emerald-600/40 transition-all shadow-sm group"
+              title="Abrir chat de WhatsApp con THE HOME PIPO"
             >
-              <Phone className="w-3.5 h-3.5 text-orange-600 dark:text-orange-500" />
-              <span>
+              <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-xs group-hover:scale-110 transition-transform">
+                <MessageCircle className="w-3.5 h-3.5 fill-white text-white" />
+              </div>
+              <span className="group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
                 {storePhone && storePhone.includes('(')
                   ? storePhone.match(/\(([^)]+)\)/)?.[1] || storePhone
-                  : storePhone || '555-747-6749'}
+                  : storePhone || '55 6747 0079'}
               </span>
             </a>
 
-            {/* Download ZIP button */}
-            <a
-              href="/api/download-zip"
-              download="THE-HOME-PIPO-v2.zip"
-              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 dark:bg-stone-900/90 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-300 text-xs font-bold rounded-2xl border border-stone-200 dark:border-stone-800 transition-all shadow-sm"
-              title="Descargar código fuente del proyecto en ZIP (THE HOME PIPO v2)"
-            >
-              <Download className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              <span>Descargar ZIP</span>
-            </a>
+            {/* PWA Install Button (visible when beforeinstallprompt fires and not installed) */}
+            <PwaInstallButton variant="header" />
 
             {/* Cart Button */}
             <button
               onClick={onOpenCart}
               id="cart-button"
-              className={`relative flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 via-red-500 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-black text-xs rounded-2xl shadow-xl shadow-red-900/40 hover:scale-105 active:scale-95 transition-all duration-200 border border-orange-400/30 ${
+              className={`relative flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 via-red-500 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-black text-xs rounded-2xl shadow-xl shadow-red-900/30 hover:scale-105 active:scale-95 transition-all duration-200 border border-orange-400/30 cursor-pointer ${
                 isCartBumping ? 'animate-cart-pop ring-4 ring-orange-500/60 shadow-orange-500/40' : ''
               }`}
               aria-label="Abrir Carrito de Compras"
@@ -203,12 +218,37 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </button>
 
+            {/* Push Notifications & Preferences */}
+            <button
+              onClick={() => setIsNotificationSettingsOpen(true)}
+              className={`p-2.5 rounded-2xl border transition-all flex items-center justify-center active:scale-95 cursor-pointer relative ${
+                notificationPerm === 'granted' && notificationPrefs.enabled
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800/60 shadow-xs'
+                  : 'bg-stone-100 dark:bg-stone-900/90 hover:bg-orange-50 dark:hover:bg-orange-950/30 text-stone-600 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400 border-stone-200 dark:border-stone-800'
+              }`}
+              title={
+                notificationPerm === 'granted' && notificationPrefs.enabled
+                  ? 'Notificaciones push activas (Haz clic para configurar o cancelar suscripción)'
+                  : 'Gestionar notificaciones push y alertas'
+              }
+              aria-label="Ajustes de Notificaciones"
+            >
+              {notificationPerm === 'granted' && notificationPrefs.enabled ? (
+                <BellRing className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+              ) : (
+                <Bell className="w-4 h-4" />
+              )}
+              {notificationPerm === 'granted' && notificationPrefs.enabled && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-stone-900"></span>
+              )}
+            </button>
+
             {/* Theme Selector */}
             {onThemeModeChange && (
               <div className="relative">
                 <button
                   onClick={() => setThemeMenuOpen(!themeMenuOpen)}
-                  className="p-2.5 rounded-2xl bg-stone-100 dark:bg-stone-900/90 hover:bg-stone-200 dark:hover:bg-stone-800 text-amber-700 dark:text-amber-400 border border-stone-200 dark:border-stone-800 transition-all flex items-center gap-1.5 active:scale-95"
+                  className="p-2.5 rounded-2xl bg-stone-100 dark:bg-stone-900/90 hover:bg-stone-200 dark:hover:bg-stone-800 text-amber-700 dark:text-amber-400 border border-stone-200 dark:border-stone-800 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
                   title={`Tema: ${themeMode === 'system' ? 'Automático (Sistema)' : themeMode === 'dark' ? 'Modo Oscuro' : 'Modo Claro'}`}
                 >
                   {themeMode === 'system' ? (
@@ -232,7 +272,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onThemeModeChange('system');
                         setThemeMenuOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
                         themeMode === 'system'
                           ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60'
                           : 'text-stone-800 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
@@ -250,7 +290,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onThemeModeChange('dark');
                         setThemeMenuOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
                         themeMode === 'dark'
                           ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60'
                           : 'text-stone-800 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
@@ -268,7 +308,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onThemeModeChange('light');
                         setThemeMenuOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
                         themeMode === 'light'
                           ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60'
                           : 'text-stone-800 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
@@ -288,7 +328,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-stone-800 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800"
+              className="lg:hidden p-2 text-stone-800 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
             </button>
@@ -306,20 +346,50 @@ export const Header: React.FC<HeaderProps> = ({
                 onOpenTracker();
                 setMobileMenuOpen(false);
               }}
-              className="w-full mb-2 flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-bold text-xs rounded-xl shadow-md"
+              className="w-full mb-2 flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-bold text-xs rounded-xl shadow-md cursor-pointer"
             >
               <UtensilsCrossed className="w-4 h-4" />
               <span>Ver Estado del Pedido Activo</span>
             </button>
           )}
 
+          {/* PWA Install Button for Mobile Drawer */}
+          <div className="py-1">
+            <PwaInstallButton variant="header" className="w-full justify-center !py-2.5" />
+          </div>
+
+          {/* Mobile Notifications Settings Button */}
+          <button
+            onClick={() => {
+              setIsNotificationSettingsOpen(true);
+              setMobileMenuOpen(false);
+            }}
+            className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-between text-stone-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer border border-stone-200 dark:border-stone-800"
+          >
+            <div className="flex items-center gap-2.5">
+              {notificationPerm === 'granted' && notificationPrefs.enabled ? (
+                <BellRing className="w-4 h-4 text-emerald-500" />
+              ) : (
+                <Bell className="w-4 h-4 text-amber-500" />
+              )}
+              <span>Ajustes de Notificaciones</span>
+            </div>
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+              notificationPerm === 'granted' && notificationPrefs.enabled
+                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                : 'bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400'
+            }`}>
+              {notificationPerm === 'granted' && notificationPrefs.enabled ? 'ACTIVO' : 'CONFIGURAR'}
+            </span>
+          </button>
+
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => handleNavClick(item.id)}
-              className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold transition-colors cursor-pointer ${
                 activeSection === item.id
-                  ? 'bg-red-600/10 text-red-700 dark:text-orange-400 font-bold border border-red-500/30'
+                  ? 'bg-red-600/10 text-red-700 dark:text-orange-400 border border-red-500/30'
                   : 'text-stone-800 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
               }`}
             >
@@ -327,16 +397,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           ))}
 
-          <a
-            href="/api/download-zip"
-            download="THE-HOME-PIPO-v2.zip"
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-stone-100 dark:bg-stone-900 text-stone-800 dark:text-stone-200 font-bold text-xs rounded-xl border border-stone-200 dark:border-stone-800 mt-2"
-          >
-            <Download className="w-4 h-4 text-amber-500" />
-            <span>Descargar Proyecto ZIP (v2)</span>
-          </a>
-
-          <div className="pt-2 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-xs text-stone-600 dark:text-stone-400 px-2">
+          <div className="pt-3 mt-2 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-xs text-stone-600 dark:text-stone-400 px-2">
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /> 1:00 PM - 11:00 PM
             </span>
@@ -346,7 +407,14 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       )}
+
+      {/* Notification Preferences & Subscription Modal */}
+      <NotificationSettingsModal
+        isOpen={isNotificationSettingsOpen}
+        onClose={() => setIsNotificationSettingsOpen(false)}
+      />
     </header>
   );
 };
+
 

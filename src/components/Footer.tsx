@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Download, Github } from 'lucide-react';
+import { Flame } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -26,11 +26,10 @@ export const Footer: React.FC = () => {
             <a
               href="/api/download-zip"
               download="THE-HOME-PIPO-fuente.zip"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-200 dark:bg-stone-900 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white text-stone-700 dark:text-stone-300 transition-all font-bold cursor-pointer"
-              title="Descargar código fuente completo en archivo ZIP"
+              className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold rounded-lg border border-emerald-500/30 transition-colors"
+              title="Descargar código fuente completo en ZIP"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Descargar ZIP</span>
+              <span>📥 Descargar ZIP</span>
             </a>
           </div>
 
@@ -49,3 +48,4 @@ export const Footer: React.FC = () => {
     </footer>
   );
 };
+

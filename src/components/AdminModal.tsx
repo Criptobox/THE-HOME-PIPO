@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Save, Plus, Trash2, Image, RefreshCw, CheckCircle, Flame, Gift, Bike, Store, Shield, Sparkles, Upload, Lock, Eye, EyeOff, Key, CheckSquare, Square, Check, Layers, Tag, Search, ToggleLeft, ToggleRight, AlertCircle, Filter, Download, Github } from 'lucide-react';
+import { X, Save, Plus, Trash2, Image, RefreshCw, CheckCircle, Flame, Gift, Bike, Store, Shield, Sparkles, Upload, Lock, Eye, EyeOff, Key, CheckSquare, Square, Check, Layers, Tag, Search, ToggleLeft, ToggleRight, AlertCircle, Filter, Download, Github, Bell, Send, Megaphone } from 'lucide-react';
 import { MenuItem, PromoCode, Topping } from '../types';
 import { TOPPINGS } from '../data/menu';
+import { notifyPromo, notifyCustomAnnouncement, requestNotificationPermission } from '../utils/notifications';
 
 export interface StoreInfo {
   phone: string;
@@ -85,7 +86,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     }
   };
 
-  const [activeTab, setActiveTab] = useState<'menu' | 'toppings' | 'promos' | 'store'>('menu');
+  const [activeTab, setActiveTab] = useState<'menu' | 'toppings' | 'promos' | 'store' | 'export'>('menu');
 
   // Local copies for editing
   const [localMenuItems, setLocalMenuItems] = useState<MenuItem[]>(JSON.parse(JSON.stringify(menuItems)));
@@ -100,6 +101,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
   const [toppingsSearch, setToppingsSearch] = useState('');
   const [toppingsCategoryFilter, setToppingsCategoryFilter] = useState<'todos' | 'carne' | 'marina' | 'vegetal' | 'queso'>('todos');
+
+  const [menuSearch, setMenuSearch] = useState('');
+  const [menuAvailabilityFilter, setMenuAvailabilityFilter] = useState<'todos' | 'disponibles' | 'agotados'>('todos');
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('todos');
@@ -170,13 +174,28 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             </button>
           </form>
 
-          <div className="bg-stone-900/80 p-3.5 rounded-2xl border border-stone-800/80 text-center space-y-1">
+          <div className="bg-stone-900/80 p-3.5 rounded-2xl border border-stone-800/80 text-center space-y-2">
             <p className="text-[11px] font-bold text-amber-300">
               🔑 Contraseña predeterminada: <span className="font-mono bg-stone-950 px-2 py-0.5 rounded text-white border border-stone-800">pipo2026</span>
             </p>
-            <p className="text-[10px] text-stone-500">
-              Puedes modificar esta contraseña en la pestaña 'Datos de Pizzería' una vez iniciada la sesión.
-            </p>
+            <div className="pt-2 border-t border-stone-800/80 flex flex-col gap-2">
+              <a
+                href="/api/download-zip"
+                download="THE-HOME-PIPO-fuente.zip"
+                className="w-full py-2.5 px-3 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 font-black text-xs rounded-xl border border-emerald-500/40 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>Descargar Código Fuente ZIP Directo</span>
+              </a>
+              <a
+                href="/api/download-web-zip"
+                download="THE-HOME-PIPO-WEB-LISTA.zip"
+                className="w-full py-2 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold text-[11px] rounded-xl border border-amber-500/30 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Descargar Web Compilada (GitHub Pages)</span>
+              </a>
+            </div>
           </div>
 
         </div>
@@ -380,11 +399,47 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     }
   };
 
+  // Menu Availability Handlers
+  const handleToggleMenuItemAvailability = (realIndex: number, currentAvailable: boolean) => {
+    const newStatus = !currentAvailable;
+    handleUpdateMenuItem(realIndex, 'available', newStatus);
+    showToast(
+      newStatus
+        ? `✅ "${localMenuItems[realIndex].name}" marcada como DISPONIBLE en el menú.`
+        : `⚠️ "${localMenuItems[realIndex].name}" marcada como NO DISPONIBLE (oculta para clientes).`
+    );
+  };
+
+  const handleToggleAllMenuItems = (selectAll: boolean) => {
+    setLocalMenuItems((prev) => prev.map((item) => ({ ...item, available: selectAll })));
+    showToast(
+      selectAll
+        ? '✅ Todos los platillos y pizzas han sido MARCADOS como disponibles.'
+        : '⚠️ Todos los platillos y pizzas han sido DESMARCADOS (no se mostrarán a clientes).'
+    );
+  };
+
   // Filtered menu
   const displayedMenuItems = localMenuItems.filter((item) => {
-    if (selectedCategoryFilter === 'todos') return true;
-    return item.category === selectedCategoryFilter;
+    const matchesCat = selectedCategoryFilter === 'todos' || item.category === selectedCategoryFilter;
+    const matchesSearch =
+      !menuSearch.trim() ||
+      item.name.toLowerCase().includes(menuSearch.toLowerCase()) ||
+      item.description.toLowerCase().includes(menuSearch.toLowerCase()) ||
+      item.ingredients.some((ing) => ing.toLowerCase().includes(menuSearch.toLowerCase()));
+    const isAvail = item.available !== false;
+    const matchesAvail =
+      menuAvailabilityFilter === 'todos' ||
+      (menuAvailabilityFilter === 'disponibles' && isAvail) ||
+      (menuAvailabilityFilter === 'agotados' && !isAvail);
+
+    return matchesCat && matchesSearch && matchesAvail;
   });
+
+  const availableMenuItemsCount = localMenuItems.filter((item) => item.available !== false).length;
+  const totalMenuItemsCount = localMenuItems.length;
+  const isAllMenuItemsSelected = totalMenuItemsCount > 0 && availableMenuItemsCount === totalMenuItemsCount;
+  const isSomeMenuItemsSelected = availableMenuItemsCount > 0 && availableMenuItemsCount < totalMenuItemsCount;
 
   // Filtered toppings
   const displayedToppings = localToppings.filter((topping) => {
@@ -463,7 +518,14 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 : 'bg-stone-900 border border-stone-800 text-stone-400 hover:text-white'
             }`}
           >
-            <span>🍕 Platillos y Fotos ({localMenuItems.length})</span>
+            <span>🍕 Platillos y Pizzas ({availableMenuItemsCount}/{totalMenuItemsCount})</span>
+            {availableMenuItemsCount === totalMenuItemsCount ? (
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            ) : availableMenuItemsCount === 0 ? (
+              <span className="w-2 h-2 rounded-full bg-red-500"></span>
+            ) : (
+              <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+            )}
           </button>
 
           <button
@@ -543,6 +605,88 @@ export const AdminModal: React.FC<AdminModalProps> = ({
           {activeTab === 'menu' && (
             <div className="space-y-6">
               
+              {/* Search, Filter & Bulk Availability Bar */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-stone-900/90 p-4 rounded-2xl border border-stone-800">
+                {/* Search Menu Input */}
+                <div className="relative w-full md:w-64">
+                  <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={menuSearch}
+                    onChange={(e) => setMenuSearch(e.target.value)}
+                    placeholder="Buscar pizza o platillo..."
+                    className="w-full bg-stone-950 border border-stone-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-orange-500"
+                  />
+                  {menuSearch && (
+                    <button
+                      onClick={() => setMenuSearch('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-white text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Availability Filter Buttons */}
+                <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 md:pb-0">
+                  <span className="text-xs text-stone-400 font-bold mr-1 flex items-center gap-1">
+                    <Filter className="w-3.5 h-3.5 text-amber-400" /> Estado:
+                  </span>
+                  <button
+                    onClick={() => setMenuAvailabilityFilter('todos')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
+                      menuAvailabilityFilter === 'todos'
+                        ? 'bg-amber-400 text-stone-950 shadow-md'
+                        : 'bg-stone-950 border border-stone-800 text-stone-300 hover:text-white'
+                    }`}
+                  >
+                    Todos ({totalMenuItemsCount})
+                  </button>
+                  <button
+                    onClick={() => setMenuAvailabilityFilter('disponibles')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all ${
+                      menuAvailabilityFilter === 'disponibles'
+                        ? 'bg-emerald-500 text-stone-950 shadow-md'
+                        : 'bg-stone-950 border border-stone-800 text-emerald-400 hover:bg-stone-800'
+                    }`}
+                  >
+                    <CheckSquare className="w-3.5 h-3.5" />
+                    <span>Disponibles ({availableMenuItemsCount})</span>
+                  </button>
+                  <button
+                    onClick={() => setMenuAvailabilityFilter('agotados')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all ${
+                      menuAvailabilityFilter === 'agotados'
+                        ? 'bg-red-500 text-white shadow-md'
+                        : 'bg-stone-950 border border-stone-800 text-red-400 hover:bg-stone-800'
+                    }`}
+                  >
+                    <Square className="w-3.5 h-3.5" />
+                    <span>Agotados / Ocultos ({totalMenuItemsCount - availableMenuItemsCount})</span>
+                  </button>
+                </div>
+
+                {/* Bulk Select All / Deselect All */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => handleToggleAllMenuItems(true)}
+                    className="px-3 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/80 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer"
+                    title="Marcar todos los platillos como disponibles"
+                  >
+                    <CheckSquare className="w-3.5 h-3.5" />
+                    <span>Activar Todos</span>
+                  </button>
+                  <button
+                    onClick={() => handleToggleAllMenuItems(false)}
+                    className="px-3 py-1.5 bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-800/80 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer"
+                    title="Desmarcar todos los platillos (ocultar)"
+                  >
+                    <Square className="w-3.5 h-3.5" />
+                    <span>Desactivar Todos</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Category Filter & Add Button */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-stone-900/80 p-4 rounded-2xl border border-stone-800">
                 <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
@@ -623,7 +767,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     <div
                       key={item.id}
                       className={`bg-stone-900/90 rounded-3xl border transition-all duration-200 overflow-hidden ${
-                        isEditing ? 'border-orange-500 ring-2 ring-orange-500/20' : 'border-stone-800 hover:border-stone-700'
+                        isEditing
+                          ? 'border-orange-500 ring-2 ring-orange-500/20'
+                          : item.available === false
+                          ? 'border-stone-800/60 opacity-60 hover:opacity-100 hover:border-stone-700'
+                          : 'border-stone-800 hover:border-stone-700'
                       }`}
                     >
                       {/* Compact Bar / Header of Item */}
@@ -667,6 +815,30 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         </div>
 
                         <div className="flex items-center gap-2 flex-shrink-0">
+                          {/* Item Availability Checkbox Quick Toggle */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleMenuItemAvailability(realIndex, item.available !== false)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer border ${
+                              item.available !== false
+                                ? 'bg-emerald-950/90 text-emerald-300 border-emerald-600/80 hover:bg-emerald-900/90 shadow-sm'
+                                : 'bg-red-950/90 text-red-300 border-red-600/80 hover:bg-red-900/90 shadow-sm'
+                            }`}
+                            title={item.available !== false ? 'Marcar como No Disponible (Agotado)' : 'Marcar como Disponible'}
+                          >
+                            {item.available !== false ? (
+                              <>
+                                <CheckSquare className="w-4 h-4 text-emerald-400" />
+                                <span>Disponible</span>
+                              </>
+                            ) : (
+                              <>
+                                <Square className="w-4 h-4 text-red-400" />
+                                <span>Agotado / Oculto</span>
+                              </>
+                            )}
+                          </button>
+
                           {/* Quick Direct Upload Button right on the item card */}
                           <label className="px-3 py-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 text-xs font-bold rounded-xl border border-amber-500/40 cursor-pointer flex items-center gap-1.5 transition-all shadow-sm">
                             <Upload className="w-3.5 h-3.5 text-amber-400" />
@@ -858,6 +1030,18 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
                           {/* Badges and Toggles */}
                           <div className="flex flex-wrap items-center gap-6 pt-1">
+                            <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-200 bg-stone-950/80 border border-stone-800 hover:border-emerald-500/50 px-3 py-1.5 rounded-xl transition-colors">
+                              <input
+                                type="checkbox"
+                                checked={item.available !== false}
+                                onChange={(e) => handleUpdateMenuItem(realIndex, 'available', e.target.checked)}
+                                className="w-4 h-4 rounded text-emerald-500 bg-stone-900 border-stone-700 focus:ring-0"
+                              />
+                              <span className={item.available !== false ? 'text-emerald-400 font-extrabold' : 'text-stone-400'}>
+                                {item.available !== false ? '✅ Platillo Disponible en Menú' : '❌ Platillo Agotado / Oculto'}
+                              </span>
+                            </label>
+
                             <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-300">
                               <input
                                 type="checkbox"
@@ -1264,6 +1448,64 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 </button>
               </div>
 
+              {/* PROMOTIONAL PUSH BROADCASTER TOOL */}
+              <div className="p-5 bg-gradient-to-r from-orange-950/80 via-stone-900 to-amber-950/80 rounded-3xl border-2 border-orange-500/40 shadow-xl space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-orange-500/20 text-orange-400 rounded-xl border border-orange-500/30">
+                      <Megaphone className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-white">Difusor de Notificaciones Push a Clientes</h4>
+                      <p className="text-xs text-stone-400">
+                        Envía alertas directas a los dispositivos de los clientes con ofertas relámpago y novedades.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-black px-2.5 py-1 rounded-full border border-emerald-500/30">
+                    Service Worker Activo
+                  </span>
+                </div>
+
+                <div className="pt-2 flex flex-wrap gap-2 items-center">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await requestNotificationPermission();
+                      const success = await notifyCustomAnnouncement(
+                        '🔥 ¡Pizzas al Horno Volcánico en THE HOME PIPO!',
+                        'Horno a 450°C encendido. Pide tu pizza artesanal favorita recién horneada.',
+                        '/#menu'
+                      );
+                      setToastMessage(success ? '✅ Notificación push enviada con éxito' : '⚠️ Permiso requerido para enviar push');
+                      setTimeout(() => setToastMessage(null), 3000);
+                    }}
+                    className="px-3.5 py-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>📢 Notificar: Horno a 450°C Activo</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await requestNotificationPermission();
+                      const success = await notifyCustomAnnouncement(
+                        '🍕 2x1 en Pizzas Tradicionales',
+                        '¡Promoción especial del día! Válido para recoger en sucursal y consumo en local.',
+                        '/#menu'
+                      );
+                      setToastMessage(success ? '✅ Notificación push de 2x1 enviada' : '⚠️ Permiso requerido');
+                      setTimeout(() => setToastMessage(null), 3000);
+                    }}
+                    className="px-3.5 py-2 bg-stone-800 hover:bg-stone-700 active:scale-95 text-amber-300 font-bold text-xs rounded-xl border border-stone-700 flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Gift className="w-3.5 h-3.5" />
+                    <span>🎁 Notificar: Promo Especial 2x1</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {localPromos.map((promo, idx) => (
                   <div key={idx} className="bg-stone-900 p-4 rounded-2xl border border-stone-800 space-y-3">
@@ -1278,12 +1520,28 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         }}
                         className="bg-stone-950 font-mono font-black text-amber-400 px-3 py-1.5 rounded-xl border border-amber-500/30 uppercase text-sm w-36 focus:outline-none"
                       />
-                      <button
-                        onClick={() => handleDeletePromo(idx)}
-                        className="p-1.5 text-stone-500 hover:text-red-400 rounded-lg hover:bg-stone-800"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await requestNotificationPermission();
+                            const sent = await notifyPromo(promo);
+                            setToastMessage(sent ? `✅ Alerta push enviada para el cupón ${promo.code}` : '⚠️ Permiso de notificación requerido');
+                            setTimeout(() => setToastMessage(null), 3000);
+                          }}
+                          className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                          title="Enviar notificación push de este cupón a los clientes"
+                        >
+                          <Bell className="w-3 h-3" />
+                          <span>Notificar Push</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeletePromo(idx)}
+                          className="p-1.5 text-stone-500 hover:text-red-400 rounded-lg hover:bg-stone-800"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -1334,6 +1592,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   </div>
                 ))}
               </div>
+
             </div>
           )}
 
