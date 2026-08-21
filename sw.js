@@ -1,4 +1,4 @@
-const CACHE_NAME = 'the-home-pipo-cache-v3';
+const CACHE_NAME = 'the-home-pipo-cache-v4';
 const OFFLINE_URL = './offline.html';
 
 const ESSENTIAL_ASSETS = [
@@ -14,7 +14,13 @@ const ESSENTIAL_ASSETS = [
   './apple-touch-icon.png',
   './favicon.png',
   './icon-192.svg',
-  './icon-512.svg'
+  './icon-512.svg',
+  './404.html',
+  './assets/index-DVurhGC5.js',
+  './assets/index-C0VHXMVd.css',
+  './assets/mobile-fixes.css',
+  './assets/pipo_hero_pizza_1786284977229-B8U_VPUc.jpg',
+  './assets/pipo_special_pizza_1786284990569-DSGw50d8.jpg'
 ];
 
 // Install Event - Pre-cache core shell & offline fallback
@@ -103,7 +109,10 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         })
         .catch(() => {
-          return cachedResponse;
+          // A failed request must still resolve to a valid Response. Returning
+          // undefined from respondWith causes an unhandled Service Worker error
+          // when an asset has never been cached.
+          return cachedResponse || Response.error();
         });
 
       return cachedResponse || fetchPromise;
@@ -165,19 +174,23 @@ self.addEventListener('notificationclick', (event) => {
   }
 
   const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : './';
+  // Resolve relative notification links against the PWA scope. This keeps
+  // notification actions working when the site is hosted below a sub-path,
+  // such as a GitHub Pages project site.
+  const absoluteTargetUrl = new URL(targetUrl, self.registration.scope).href;
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
         if ('focus' in client) {
           if (client.url && client.url.includes(self.location.origin)) {
-            client.navigate(targetUrl);
+            client.navigate(absoluteTargetUrl);
             return client.focus();
           }
         }
       }
       if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
+        return clients.openWindow(absoluteTargetUrl);
       }
     })
   );
