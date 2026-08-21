@@ -1,14 +1,20 @@
-const CACHE_NAME = 'the-home-pipo-cache-v2';
-const OFFLINE_URL = '/offline.html';
+const CACHE_NAME = 'the-home-pipo-cache-v3';
+const OFFLINE_URL = './offline.html';
 
 const ESSENTIAL_ASSETS = [
-  '/',
-  '/index.html',
-  '/offline.html',
-  '/manifest.json',
-  '/manifest.webmanifest',
-  '/icon-192.svg',
-  '/icon-512.svg'
+  './',
+  './index.html',
+  './offline.html',
+  './manifest.json',
+  './manifest.webmanifest',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-192.png',
+  './icon-maskable-512.png',
+  './apple-touch-icon.png',
+  './favicon.png',
+  './icon-192.svg',
+  './icon-512.svg'
 ];
 
 // Install Event - Pre-cache core shell & offline fallback
@@ -48,7 +54,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
-  // Skip chrome-extension, internal schemes, and server API mutations
+  // Skip non-http schemes
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     return;
   }
@@ -58,7 +64,6 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then((networkResponse) => {
-          // Cache a fresh copy of the page
           if (networkResponse && networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -68,7 +73,6 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         })
         .catch(async () => {
-          // If network fails, try to return cached page or fallback to offline.html
           const cachedResponse = await caches.match(event.request);
           if (cachedResponse) {
             return cachedResponse;
@@ -86,7 +90,6 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 2. Static Assets (CSS, JS, Fonts, Images, Icons)
-  // Use Stale-While-Revalidate strategy for lightning fast load and offline resilience
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)
@@ -100,7 +103,6 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         })
         .catch(() => {
-          // Network failed, nothing extra needed if cachedResponse was returned
           return cachedResponse;
         });
 
@@ -113,14 +115,13 @@ self.addEventListener('fetch', (event) => {
 // PUSH NOTIFICATIONS & INTERACTIVITY
 // ==========================================
 
-// Push Event - Received from Push Server / Web Push Protocol
 self.addEventListener('push', (event) => {
   let data = {
     title: 'THE HOME PIPO 🔥 Pizzería',
     body: '¡Hay una actualización en tu pedido artesanal!',
-    icon: '/icon-192.svg',
-    badge: '/icon-192.svg',
-    url: '/',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    url: './',
     tag: 'pipo-order-update',
   };
 
@@ -134,11 +135,11 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: data.icon || '/icon-192.svg',
-    badge: data.badge || '/icon-192.svg',
+    icon: data.icon || './icon-192.png',
+    badge: data.badge || './icon-192.png',
     vibrate: [200, 100, 200, 100, 300],
     data: {
-      url: data.url || '/',
+      url: data.url || './',
       orderId: data.orderId,
       promoCode: data.promoCode,
       timestamp: Date.now(),
@@ -156,7 +157,6 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Notification Click Event - Navigation & Window Focus
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
@@ -164,11 +164,10 @@ self.addEventListener('notificationclick', (event) => {
     return;
   }
 
-  const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : '/';
+  const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : './';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Check if there is already a window open
       for (const client of clientList) {
         if ('focus' in client) {
           if (client.url && client.url.includes(self.location.origin)) {
@@ -184,16 +183,14 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Message Event - Receive direct notification dispatch from client scripts
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     const { title, options } = event.data.payload;
     self.registration.showNotification(title, {
-      icon: '/icon-192.svg',
-      badge: '/icon-192.svg',
+      icon: './icon-192.png',
+      badge: './icon-192.png',
       vibrate: [200, 100, 200],
       ...options
     });
   }
 });
-

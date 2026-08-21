@@ -2,43 +2,67 @@
   "name": "THE HOME PIPO - Pizzería Artesanal",
   "short_name": "THE HOME PIPO",
   "description": "Pizzas artesanales al horno de piedra volcánica. Menú interactivo, personalizador y pedidos.",
-  "start_url": "/",
-  "id": "/",
+  "start_url": "./",
+  "id": "the-home-pipo-pwa",
   "display": "standalone",
   "background_color": "#0F0E0D",
   "theme_color": "#ea580c",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "./",
   "lang": "es-MX",
-  "categories": ["food", "lifestyle", "shopping"],
+  "categories": ["food", "shopping", "lifestyle"],
   "icons": [
     {
-      "src": "/icon-192.svg",
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/icon-512.svg",
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "shortcuts": [
     {
       "name": "Ver Menú",
-      "url": "/#menu",
+      "url": "./#menu",
       "description": "Explora nuestras pizzas y platillos"
     },
     {
       "name": "Armar Pizza",
-      "url": "/#builder",
+      "url": "./#builder",
       "description": "Personaliza tu pizza a la medida"
     },
     {
       "name": "Contacto & Ubicación",
-      "url": "/#contacto",
+      "url": "./#contacto",
       "description": "Llámanos o visítanos"
     }
   ]
