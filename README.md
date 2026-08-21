@@ -1,132 +1,61 @@
-# 🍕 Pizzas Pipo - Plataforma Web Interactiva & Sistema de Delivery
+# 🍕 THE HOME PIPO - Pizzería Artesanal PWA
 
-Plataforma web moderna, rápida e interactiva para **Pizzas Pipo**. Permite a los clientes explorar el menú, personalizar pizzas en un canvas 2D interactivo, recibir recomendaciones con inteligencia artificial (**Pipo AI Sommelier**), consultar zonas de cobertura, realizar pedidos con cálculo de envío y cupones, y rastrear el estado del pedido en tiempo real. Además, incluye un **Panel de Administración protegido por contraseña** para gestionar todo el restaurante.
-
----
-
-## 🚀 Características Principales
-
-- 🍕 **Menú Interactivo Completo**: Pizzería, entradas, combos, bebidas y postres con filtros por categorías, vegetarianas, picantes y de alta demanda.
-- 🎨 **Creador Visual de Pizzas (Canvas 2D)**: Diseña tu pizza desde cero seleccionando tipo de masa, tamaño, salsa, queso e ingredientes con vista previa en vivo.
-- 🤖 **Pipo AI Sommelier**: Recomendador inteligente integrado con el modelo **Gemini AI** para sugerir maridajes de pizzas y bebidas según la ocasión o antojo del cliente.
-- 🚚 **Verificador de Zonas de Cobertura**: Consulta de colonias, costos de envío y tiempos estimados de entrega.
-- 🎟️ **Sistema de Cupones y Promociones**: Aplicación de códigos de descuento (ej. `PIPO20`, `PIPO100`) y cálculo de propinas opcionales.
-- 📱 **Checkout y Rastreador de Pedidos**: Proceso de compra sencillo con simulación en tiempo real de estados del horno (Recibido ➔ En Horno ➔ En Camino ➔ Entregado).
-- 🔓 **Panel de Administración Integrado**:
-  - **Acceso por Contraseña**: Protegido con pantalla de autenticación.
-  - **Activación**: Toca **3 veces** consecutivas el logo de *Pizzas Pipo* en la barra superior.
-  - **Contraseña predeterminada**: `pipo2026` (modificable desde el panel).
-  - **Gestión completa**: Modifica o agrega platillos, sube imágenes, cambia precios, edita promociones, configura zonas de entrega y actualiza avisos del sitio.
+Aplicación web progresiva (PWA) de alta gama para pizzería artesanal al horno de piedra volcánica (450°C), con armador de pizzas en 2D, sommelier inteligente con IA, seguimiento de pedidos en tiempo real y notificaciones push.
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## 🚀 ¿Por qué dejaba de cargar la página al subir el ZIP?
 
-- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS
-- **Iconos & Animaciones**: Lucide React, Motion, Canvas Confetti
-- **Servidor Backend**: Express.js (Node.js) con bundling esbuild
-- **Inteligencia Artificial**: `@google/genai` (Gemini AI SDK)
+Cuando descargas el **código fuente**, los archivos están escritos en **React + TypeScript (`.tsx`)**. Los navegadores y servicios de hosting estático (como GitHub Pages) **no pueden ejecutar archivos `.tsx` sin antes compilarlos** a HTML, CSS y JavaScript estándar.
+
+### 🛠️ Solución Implementada:
+
+Hemos configurado **2 métodos definitivos** para que la página funcione al 100% y se actualice automáticamente:
 
 ---
 
-## 📦 Instalación y Ejecución Local
+### OPCIÓN 1 (Recomendada): Despliegue Automático con GitHub Actions (CI/CD)
 
-### Pre-requisitos
-Asegúrate de tener instalado **Node.js** (versión 18 o superior) y **npm**.
+Ya hemos incluido el archivo de automatización en:
+`.github/workflows/deploy.yml`
 
-### 1. Clonar o descargar el repositorio
+**Cómo funciona:**
+1. Sube los archivos del ZIP del código fuente a tu repositorio en GitHub.
+2. En tu repositorio en GitHub, ve a **Settings** > **Pages**.
+3. En **Source** (Origen), selecciona: **GitHub Actions**.
+4. ¡Listo! **Cada vez que subas cambios o actualices archivos, GitHub compilará y montará la página automáticamente en segundos** sin que tengas que hacer nada manual.
+
+---
+
+### OPCIÓN 2: Subir la Web Ya Compilada (Sin necesidad de compilar)
+
+Si prefieres no usar GitHub Actions y subir los archivos directamente a GitHub Pages, Netlify o cualquier hosting:
+
+1. Descarga el archivo **`THE-HOME-PIPO-WEB-LISTA.zip`** desde el enlace directo `/api/download-web-zip` o desde el botón en la web.
+2. Descomprime ese ZIP: contiene la carpeta `dist` con los archivos HTML, CSS y JavaScript ya compilados y listos.
+3. Sube esos archivos directamente a la raíz de tu repositorio o hosting.
+
+---
+
+## 💻 Desarrollo Local
+
+Para correr el proyecto en tu máquina local:
+
 ```bash
-git clone https://github.com/TU_USUARIO/pizzas-pipo.git
-cd pizzas-pipo
-```
-
-### 2. Instalar dependencias
-```bash
+# 1. Instalar dependencias
 npm install
-```
 
-### 3. Configurar variables de entorno (Opcional)
-Crea un archivo `.env` basado en `.env.example`:
-```bash
-cp .env.example .env
-```
-Si deseas activar el modelo Gemini AI para el Sommelier, asigna tu API key en el archivo `.env`:
-```env
-GEMINI_API_KEY=tu_api_key_aqui
-```
-
-### 4. Iniciar servidor de desarrollo
-```bash
+# 2. Iniciar servidor de desarrollo
 npm run dev
-```
-La aplicación estará disponible en `http://localhost:3000`.
 
----
-
-## 🏗️ Compilación para Producción
-
-Para generar los archivos optimizados de producción:
-
-```bash
+# 3. Compilar para producción
 npm run build
 ```
 
-Para ejecutar el servidor de producción:
-
-```bash
-npm start
-```
-
 ---
 
-## 🌐 Despliegue Automático en GitHub Pages
-
-El proyecto ya está **100% configurado para GitHub Pages**:
-
-1. **Sube el código a GitHub** usando la guía de abajo.
-2. En tu repositorio de GitHub, ve a **Settings** ➔ **Pages**.
-3. En **Source** (Fuente), selecciona **GitHub Actions**.
-4. ¡Listo! Cada vez que hagas un `git push`, GitHub construirá y desplegará tu página automáticamente en la dirección:
-   `https://TU_USUARIO.github.io/pizzas-pipo/`
-
----
-
-## 📤 Pasos para Subir este Proyecto a GitHub (Paso a Paso)
-
-1. **Descarga el ZIP**: Haz clic en el botón **"ZIP"** en la barra superior o en **"Descargar Proyecto (.ZIP)"** en el pie de página del sitio.
-2. **Descomprime el archivo ZIP** en tu computadora.
-3. **Crea un nuevo repositorio en GitHub** (ej. `pizzas-pipo`).
-4. Abre la terminal en la carpeta descomprimida y ejecuta:
-
-```bash
-# 1. Inicializar repositorio git local
-git init
-
-# 2. Agregar todos los archivos
-git add .
-
-# 3. Crear el primer commit
-git commit -m "feat: Lanzamiento inicial de Pizzas Pipo"
-
-# 4. Asignar rama principal
-git branch -M main
-
-# 5. Enlazar con tu repositorio de GitHub (reemplaza TU_USUARIO y REPO)
-git remote add origin https://github.com/TU_USUARIO/pizzas-pipo.git
-
-# 6. Subir los archivos
-git push -u origin main
-```
-
----
-
-## 🔒 Seguridad y Credenciales Admin
-
-- **Contraseña por defecto**: `pipo2026`
-- Para modificar la contraseña, ingresa al Panel de Administración (3 toques en el logo), navega a la pestaña **Datos de Pizzería** y actualiza el campo **Contraseña de Acceso**.
-
----
-
-## 📄 Licencia
-
-Este proyecto es software de código abierto desarrollado para **Pizzas Pipo**.
+## 📱 Características de la PWA
+- **Service Worker (`sw.js`)**: Notificaciones push con branding oficial y funcionamiento offline.
+- **Manifest (`manifest.json`)**: Instalable en Android, iOS, Windows y macOS.
+- **Iconos de Marca**: En resoluciones de 192x192 y 512x512 con insignia de notificaciones.
+- **Chef Pipo AI**: Asistente y sommelier con Google Gemini.

@@ -340,14 +340,18 @@ Preferencias/restricciones: ${preferences || 'Sin restricciones'}
 
       // Build static site if not exists or to update
       try {
-        execSync("npx vite build", { cwd: rootDir, stdio: "ignore" });
-      } catch (buildErr) {
-        console.warn("Vite build warning during ZIP generation:", buildErr);
+        execSync("npx vite build", { cwd: rootDir, stdio: "pipe" });
+      } catch (buildErr: any) {
+        console.warn("Vite build warning during ZIP generation:", buildErr.message);
       }
 
-      // Ensure .nojekyll exists in dist for GitHub Pages
+      // Ensure .nojekyll and 404.html exist in dist for GitHub Pages
       if (fs.existsSync(distDir)) {
         fs.writeFileSync(path.join(distDir, ".nojekyll"), "");
+        const indexPath = path.join(distDir, "index.html");
+        if (fs.existsSync(indexPath)) {
+          fs.copyFileSync(indexPath, path.join(distDir, "404.html"));
+        }
       }
 
       const zip = new JSZip();

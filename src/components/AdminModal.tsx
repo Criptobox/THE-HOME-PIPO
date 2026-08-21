@@ -1754,12 +1754,16 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               <div className="bg-stone-950 p-5 rounded-3xl border border-stone-800/80 space-y-3">
                 <div className="flex items-center gap-2 text-stone-300 font-bold text-xs">
                   <Github className="w-4 h-4 text-white" />
-                  <span>Pasos para subir a GitHub:</span>
+                  <span>Automatización GitHub Actions (Montaje Automático en cada cambio):</span>
+                </div>
+                <div className="p-3 bg-emerald-950/30 border border-emerald-500/30 rounded-2xl text-xs text-emerald-300">
+                  ⚡ <strong>¡Listo para CI/CD automático!</strong> Ya incluimos el archivo de compilación automática en <code className="font-mono bg-black/40 px-1 py-0.5 rounded text-white">.github/workflows/deploy.yml</code>.
                 </div>
                 <ol className="text-xs text-stone-400 space-y-1.5 list-decimal list-inside leading-relaxed">
-                  <li>Haz clic en <strong>"Descargar Código Fuente (.ZIP)"</strong> y descomprime la carpeta en tu computadora.</li>
-                  <li>Abre la terminal en la carpeta y ejecuta: <code className="text-amber-400 font-mono text-[11px]">git init</code> luego <code className="text-amber-400 font-mono text-[11px]">git add .</code> y <code className="text-amber-400 font-mono text-[11px]">git commit -m "Initial commit THE HOME PIPO"</code>.</li>
-                  <li>Crea un repositorio en GitHub y enlázalo con <code className="text-amber-400 font-mono text-[11px]">git remote add origin URL_DE_TU_REPOSITORIO</code> y <code className="text-amber-400 font-mono text-[11px]">git push -u origin main</code>.</li>
+                  <li>Sube los archivos del ZIP a tu repositorio de GitHub.</li>
+                  <li>En tu repositorio en GitHub, entra a <strong>Settings</strong> ➔ <strong>Pages</strong>.</li>
+                  <li>En la opción <strong>Source</strong>, selecciona: <strong>GitHub Actions</strong>.</li>
+                  <li>¡Listo! Cada vez que subas cambios o actualices archivos, GitHub compilará y montará la web automáticamente en segundos sin errores.</li>
                 </ol>
               </div>
             </div>

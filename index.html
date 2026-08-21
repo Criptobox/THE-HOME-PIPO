@@ -7,8 +7,7 @@
     <meta name="description" content="Bienvenido a THE HOME PIPO. Disfruta de nuestras pizzas artesanales al horno de piedra volcánica, arma tu pizza en 2D, pide para recoger o comer en sucursal." />
     
     <!-- PWA Manifest & App Info -->
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#ea580c" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,16 +16,16 @@
     <meta name="application-name" content="THE HOME PIPO" />
 
     <!-- Icons & Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/icon-192.svg" />
-    <link rel="apple-touch-icon" href="/icon-192.svg" />
-    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.svg" />
-    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.svg" />
+    <link rel="icon" type="image/svg+xml" href="./icon-192.svg" />
+    <link rel="apple-touch-icon" href="./icon-192.svg" />
+    <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.svg" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="THE HOME PIPO - Pizzería Artesanal" />
     <meta property="og:description" content="Pizzas artesanales horneadas a 450°C sobre piedra volcánica. Ordena en línea tus pizzas favoritas." />
-    <meta property="og:image" content="/icon-512.svg" />
+    <meta property="og:image" content="./icon-512.svg" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +40,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('./sw.js')
             .then((registration) => {
               console.log('[THE HOME PIPO] Service Worker registrado con alcance:', registration.scope);
               
