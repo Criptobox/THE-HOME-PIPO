@@ -1,0 +1,45 @@
+{
+  "name": "THE HOME PIPO - Pizzería Artesanal",
+  "short_name": "THE HOME PIPO",
+  "description": "Pizzas artesanales al horno de piedra volcánica. Menú interactivo, personalizador y pedidos.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#0F0E0D",
+  "theme_color": "#ea580c",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es-MX",
+  "categories": ["food", "lifestyle", "shopping"],
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ver Menú",
+      "url": "/#menu",
+      "description": "Explora nuestras pizzas y platillos"
+    },
+    {
+      "name": "Armar Pizza",
+      "url": "/#builder",
+      "description": "Personaliza tu pizza a la medida"
+    },
+    {
+      "name": "Contacto & Ubicación",
+      "url": "/#contacto",
+      "description": "Llámanos o visítanos"
+    }
+  ]
+}
