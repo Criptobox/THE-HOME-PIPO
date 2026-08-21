@@ -1,0 +1,167 @@
+/*
+ * THE HOME PIPO - responsive and runtime safety fixes
+ *
+ * The deployed bundle is static, so these rules intentionally live in a small
+ * override stylesheet. They keep the generated Tailwind styles intact while
+ * fixing the edge cases that are easiest to hit on narrow phones.
+ */
+
+html,
+body,
+#root {
+  max-width: 100%;
+}
+
+html {
+  overflow-x: clip;
+}
+
+body,
+#root {
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* Media and transformed decorative elements must never widen the page. */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* Keep hash navigation visible below the sticky two-row header. */
+section[id] {
+  scroll-margin-top: 7.5rem;
+}
+
+/* CartDrawer: avoid using the viewport width as a minimum inside a padded
+   fixed flex container. */
+.pipo-cart-panel {
+  width: min(100%, 28rem);
+  max-width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  /* Header --------------------------------------------------------------- */
+  .pipo-header-row {
+    min-width: 0;
+  }
+
+  .pipo-header-brand {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .pipo-header-brand > div:last-child {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .pipo-header-brand > div:last-child > div:first-child {
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .pipo-header-title {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pipo-header-brand > div:last-child > p {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pipo-header-actions {
+    flex: 0 0 auto;
+    gap: 0.5rem;
+  }
+
+  /* The install action remains available through its title/accessible name,
+     but its label is icon-only on phones so it cannot push the cart and menu
+     buttons outside the viewport. */
+  #pwa-header-install-btn {
+    gap: 0.375rem;
+    padding-inline: 0.75rem;
+  }
+
+  #pwa-header-install-btn > span:last-of-type {
+    display: none;
+  }
+
+  /* Hero status pill ----------------------------------------------------- */
+  .pipo-oven-status {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .pipo-oven-status > span:not(.relative) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Order tracker -------------------------------------------------------- */
+  .pipo-order-timeline {
+    justify-content: flex-start;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: thin;
+  }
+
+  .pipo-order-timeline > .relative.z-10 {
+    flex: 1 0 3rem;
+    min-width: 3rem;
+  }
+
+  .pipo-order-timeline > .relative.z-10 > span {
+    max-width: 100%;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  /* Toasts --------------------------------------------------------------- */
+  .pipo-review-toast {
+    left: 1rem;
+    right: 1rem;
+    max-width: calc(100vw - 2rem);
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Connection and install-success notifications use the same centered
+     desktop positioning. Give them a mobile-safe width and allow wrapping. */
+  [class~="fixed"][class~="top-4"][class~="left-1/2"] {
+    width: calc(100vw - 1.5rem);
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  [class~="fixed"][class~="top-4"][class~="left-1/2"] > div {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
+  [class~="fixed"][class~="bottom-6"][class~="right-6"] {
+    left: 1rem;
+    right: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+}
+
+@supports not (overflow: clip) {
+  html {
+    overflow-x: hidden;
+  }
+}
